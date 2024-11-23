@@ -141,7 +141,7 @@ z = {}
 for v in V:
     for i in R:
         z[i,v] = pulp.LpVariable(name=f"z_{i}_{v}", cat='Binary')
-Variables de Asignación de Vehículos a Depósitos
+#Variables de Asignación de Vehículos a Depósitos
 python
 Copiar código
 # Variables y_{vd}: 1 si el vehículo v está asignado al depósito d

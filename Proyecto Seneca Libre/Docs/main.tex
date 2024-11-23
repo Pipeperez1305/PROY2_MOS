@@ -1,0 +1,464 @@
+\documentclass[12pt]{article}
+\usepackage{amsmath, amsfonts, amssymb}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{geometry}
+\geometry{a4paper, margin=1in}
+\usepackage{enumitem}
+\usepackage{fancyhdr}
+\usepackage{titlesec}
+\usepackage[spanish]{babel}
+
+% Header and Footer
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\leftmark}
+\fancyhead[R]{Proyecto Seneca-Libre: Etapa 2}
+\fancyfoot[C]{\thepage}
+
+% Section Formatting
+\titleformat{\section}
+  {\normalfont\Large\bfseries}{\thesection}{1em}{}
+\titleformat{\subsection}
+  {\normalfont\large\bfseries}{\thesubsection}{1em}{}
+\titleformat{\subsubsection}
+  {\normalfont\normalsize\bfseries}{\thesubsubsection}{1em}{}
+
+\title{Proyecto Seneca-Libre: Etapa 2 - Implementación y Resolución del Modelo de Ruteo Vehicular}
+\author{\textbf{Instructores:} \\
+Carlos Andrés Lozano, \\
+Germán Adolfo Montoya, \\
+Juan Andrés Mendez}
+\date{}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+Este documento describe la segunda etapa del proyecto de optimización logística de Seneca Libre, enfocada en la implementación y validación del modelo matemático desarrollado previamente para mejorar la eficiencia en las rutas de suministro. El objetivo de esta fase es demostrar que el modelo propuesto refleja con precisión la operación logística real, permitiendo la predicción de rutas y costos de forma confiable. A través de la implementación en entornos de programación y la resolución de diversos escenarios de prueba, se espera obtener datos que permitan evaluar la viabilidad y precisión del modelo. Esta fase incluye un análisis detallado de los resultados, destacando las oportunidades de mejora en la eficiencia operativa y la reducción de costos. Con esta validación, Seneca Libre busca no solo consolidarse como líder en el mercado de comercio electrónico, sino también establecer una base para futuras simulaciones y ajustes que impulsen la sostenibilidad y competitividad de sus operaciones.
+\end{abstract}
+
+\section{Introducción}
+En Seneca Libre, nuestra misión es mantenernos como líderes en el comercio electrónico en Bogotá mediante una operación logística eficiente y altamente competitiva. En la primera etapa de este proyecto, desarrollamos un modelo matemático integral para optimizar nuestras rutas de suministro, abordando los desafíos operacionales que enfrentamos debido a la alta demanda, los costos elevados, y las limitaciones en nuestra flota de más de 700 vehículos. Este modelo fue diseñado para reducir costos operativos, mejorar la puntualidad de las entregas y optimizar la carga de trabajo de nuestros transportistas.
+
+Con el modelado inicial completado, avanzamos ahora a la etapa de implementación. En esta fase, el objetivo es demostrar que el modelo diseñado representa de forma precisa nuestra operación logística y permite predecir los costos y rutas de manera realista. Cada equipo deberá implementar el modelo en un entorno de programación (Python con Pyomo o PuLP, o GAMS), y resolver una serie de casos de prueba que reflejan diferentes escenarios operacionales. A través de esta implementación, esperamos obtener datos valiosos sobre las rutas y los costos óptimos que el modelo es capaz de proponer, lo que servirá para evaluar su viabilidad y precisión.
+
+La importancia de esta etapa radica en la validación y análisis de los resultados obtenidos, los cuales deben ofrecer una visión clara de las mejoras potenciales en la eficiencia de nuestras operaciones. Los equipos deberán presentar no solo los resultados de las rutas optimizadas, sino también un análisis detallado de los costos involucrados, identificando cualquier posible discrepancia entre el modelo y las operaciones reales. La información recopilada permitirá a Seneca Libre tomar decisiones informadas sobre futuras implementaciones y ajustes en la estrategia logística.
+
+Esta segunda entrega no solo busca validar el modelo propuesto, sino también establecer una base sólida para futuras simulaciones y adaptaciones. Con ello, Seneca Libre pretende no solo mantenerse al frente del mercado, sino también reducir significativamente los costos y tiempos de entrega, elevando los estándares de servicio para nuestros clientes y mejorando nuestra sostenibilidad en el competitivo mundo del comercio electrónico.
+
+\section{Objetivos Específicos de la Etapa 2}
+\begin{itemize}
+    \item Implementar el modelo matemático en un lenguaje de programación (Python con Pyomo o PuLP, o GAMS).
+    \item Resolver varios casos de prueba para analizar el comportamiento del modelo y validar su efectividad en la optimización de costos.
+    \item Explorar escenarios operacionales extremos y estrategias para poder resolver el problema de ruteo vehicular de forma escalable.
+    \item Realizar análisis de resultados para optimizar la flota y reducir el tiempo de entrega.
+\end{itemize}
+
+\section{Datos y Recursos Disponibles}
+
+Para la implementación y resolución del modelo de ruteo vehicular en esta etapa, se cuenta con diversos datos de entrada que describen los puntos de entrega, centros de distribución, vehículos y nodos de recarga. Aunque algunos datos adicionales, como los tipos de productos y las capacidades específicas de los centros de distribución, no son críticos para los primeros casos de prueba, se incluyen a continuación para una referencia completa.
+
+\subsection{Datos de Puntos de Entrega}
+
+Cada cliente se representa mediante coordenadas geográficas, utilizando la latitud y longitud para determinar su ubicación en el mapa. El conjunto de datos incluye:
+\begin{itemize}
+    \item \textbf{ClientID:} Un identificador único para cada cliente.
+    \item \textbf{Demanda[$kg$]:} Cantidad de producto solicitada por el cliente, expresada en kilogramos (kg). (* \textbf{Nota:} Para uno de los casos donde hay multiples productos, se debe considerar la demanda de cada producto por separado \textbf{i.e} `Producto-Type-A', `Producto-Type-B', `Producto-Type-C')
+    \item \textbf{Longitud y Latitud:} Coordenadas geográficas en grados decimales, expresadas como $\text{Longitud}_{\text{cliente}}$ (°) y $\text{Latitud}_{\text{cliente}}$ (°).
+\end{itemize}
+
+\subsection{Datos de Centros de Distribución}
+
+Los centros de distribución (o "depots") se representan con su ubicación geográfica y la capacidad de almacenamiento por tipo de producto:
+\begin{itemize}
+    \item \textbf{DepotID:} Un identificador único para cada centro de distribución.
+    \item \textbf{Longitud y Latitud:} Coordenadas geográficas en grados decimales, expresadas como $\text{Longitud}_{\text{depot}}$ (°) y $\text{Latitud}_{\text{depot}}$ (°).
+    \item \textbf{Capacidad de Producto:} Capacidad de almacenamiento por cada tipo de producto (* \textbf{Nota} A, B y C Dependiendo si tenemos uno mas productos.) en cada centro de distribución, expresada en unidades de producto. Aunque se incluyen en el conjunto de datos, estas capacidades no son relevantes para los primeros casos de prueba.
+\end{itemize}
+
+\subsection{Datos de Vehículos}
+
+Los datos de vehículos disponibles incluyen información detallada sobre el tipo de vehículo, capacidad de carga, rango operativo y costos asociados. A continuación, se describen los parámetros específicos de cada tipo de vehículo:
+
+\begin{itemize}
+    \item \textbf{VehicleType:} Tipo de vehículo. Se incluyen tres tipos:
+    \begin{itemize}
+        \item \textit{Gas Car:} Vehículo de gasolina con parámetros específicos de eficiencia y costos.
+        \item \textit{Drone:} Vehículo aéreo no tripulado que utiliza electricidad como fuente de energía.
+        \item \textit{Solar EV:} Vehículo eléctrico con capacidad de recarga solar.
+    \end{itemize}
+    \item \textbf{Capacidad} ($C_{\text{vehículo}}$): Capacidad máxima de carga de cada vehículo, expresada en kilogramos (kg). Cada vehículo tiene una capacidad específica para transportar carga.
+    \item \textbf{Rango} ($R_{\text{vehículo}}$): Distancia máxima que puede recorrer el vehículo con una carga completa de combustible o energía, expresada en kilómetros (km).
+    \item \textbf{Tarifa de Flete} ($\text{Freight Rate}$): Costo por kilómetro recorrido por cada tipo de vehículo, expresado en pesos colombianos por kilómetro (COP/km).
+    \item \textbf{Tarifa de Tiempo} ($\text{Time Rate}$): Costo por minuto de operación del vehículo, expresado en pesos colombianos por minuto (COP/min).
+    \item \textbf{Costo de Mantenimiento Diario} ($\text{Daily Maintenance}$): Costo diario de mantenimiento del vehículo, expresado en pesos colombianos por día (COP/día).
+    \item \textbf{Costo de Recarga/Combustible} ($\text{Recharge/Fuel Cost}$): Costo de recarga o combustible por unidad (galón o kWh), expresado en pesos colombianos (COP/gal o COP/kWh).
+    \item \textbf{Tiempo de Recarga/Combustible} ($\text{Recharge/Fuel Time}$): Tiempo necesario para recargar un 10\% de la capacidad total de energía o combustible del vehículo, expresado en minutos (min/10\% de carga).
+    \item \textbf{Velocidad Promedio} ($\text{Avg. Speed}$): Velocidad promedio del vehículo, expresada en kilómetros por hora (km/h).
+    \item \textbf{Eficiencia de Combustible} ($\text{Gas Efficiency}$): Eficiencia del vehículo en cuanto a consumo de gasolina, expresada en kilómetros por galón (km/gal) para vehículos de gasolina.
+    \item \textbf{Eficiencia Energética} ($\text{Electricity Efficiency}$): Eficiencia en consumo de electricidad, expresada en kilovatios hora por kilómetro (kWh/km) para vehículos eléctricos y drones.
+\end{itemize}
+
+Los datos específicos para cada tipo de vehículo se detallan en la siguiente tabla:
+
+\begin{table}[h!]
+\centering
+\begin{tabular}{|l|c|c|c|}
+\hline
+\textbf{Parámetro} & \textbf{Gas Car} & \textbf{Drone} & \textbf{Solar EV} \\
+\hline
+Freight Rate [COP/km] & 5000 & 500 & 4000 \\
+Time Rate [COP/min] & 500 & 500 & 500 \\
+Daily Maintenance [COP/day] & 30000 & 3000 & 21000 \\
+Recharge/Fuel Cost [COP/(gal or kWh)] & 16000 & 220.73 & - \\
+Recharge/Fuel Time [min/10\% charge] & 0.1 & 2 & - \\
+Avg. Speed [km/h] & - & 40 & - \\
+Gas Efficiency [km/gal] & 10 & - & - \\
+Electricity Efficiency [kWh/km] & - & 0.15 & 0.15 \\
+\hline
+\end{tabular}
+\caption{Parámetros de Costos y Eficiencia para Vehículos}
+\end{table}
+
+\subsubsection{Velocidad de Carga}
+
+Además de los costos de operación y recarga, el proceso de carga de cada vehículo tiene un costo asociado. Cada minuto de carga tiene un costo de 500 COP, y se puede cargar un promedio de 5 kg de carga por minuto, en función del trabajo de un empleado encargado de la carga de los vehículos.
+
+Definimos el costo total de carga ($C_{\text{carga}}$) para un vehículo de la siguiente forma:
+\begin{equation}
+C_{\text{carga}} = \text{Carga} \times \frac{500 \, \text{COP}}{\text{kg/min}}
+\end{equation}
+
+donde \textit{Carga} es la cantidad de peso en kilogramos (kg) que se carga en el vehículo en un tiempo determinado.
+
+\subsection{Datos de Nodos de Recarga}
+
+Los nodos de recarga representan estaciones donde los vehículos pueden recargar combustible o energía. Estos nodos están definidos por:
+\begin{itemize}
+    \item \textbf{NodeID:} Un identificador único para cada nodo de recarga.
+    \item \textbf{Longitud y Latitud:} Coordenadas geográficas en grados decimales, expresadas como $\text{Longitud}_{\text{nodo}}$ (°) y $\text{Latitud}_{\text{nodo}}$ (°).
+\end{itemize}
+
+\subsection{Datos de Costos}
+
+Para el modelo de ruteo vehicular, los costos se componen principalmente de los gastos asociados a las distancias y tiempos operativos de cada vehículo. Aunque algunos datos de costos específicos están directamente relacionados con el tipo de vehículo, como las tarifas de flete y tiempo, otros deben calcularse en función de la distancia recorrida y el tiempo empleado en cada ruta.
+
+El costo operativo de cada vehículo en una ruta particular se puede expresar en función de la distancia ($d$, en km) y el costo por kilómetro ($c_{\text{km}}$), obteniendo el costo total ($C_{\text{total}}$) mediante la siguiente ecuación:
+\begin{equation}
+C_{\text{total}} = c_{\text{km}} \times d
+\end{equation}
+
+donde $c_{\text{km}}$ es el costo por kilómetro de operación para el tipo específico de vehículo utilizado, y $d$ representa la distancia total recorrida en kilómetros.
+
+De igual manera, se debe considerar el tiempo de operación ($t$, en minutos) y el costo por minuto ($c_{\text{min}}$) asociado a cada vehículo para obtener el costo total en función del tiempo:
+\begin{equation}
+C_{\text{tiempo}} = c_{\text{min}} \times t
+\end{equation}
+
+donde $c_{\text{min}}$ es el costo por minuto para el vehículo y $t$ es el tiempo total de la ruta en minutos.
+
+Por lo tanto, el costo total de operación ($C_{\text{operativo}}$) para una ruta puede calcularse como la suma de los costos de distancia y tiempo:
+\begin{equation}
+C_{\text{operativo}} = C_{\text{total}} + C_{\text{tiempo}}
+\end{equation}
+
+Estos valores deberán ser calculados según las rutas específicas de cada caso de prueba, ya que las distancias y tiempos varían en cada escenario. Los demás costos, tales como mantenimiento diario, tarifas de recarga y costos asociados al proceso de carga, ya están cubiertos en los datos específicos del vehículo y no requieren cálculos adicionales en esta fase del análisis.
+
+\subsection{Herramientas de Ayuda, Recursos Adicionales y Consideraciones}
+
+Para el desarrollo del proyecto, se recomienda utilizar herramientas avanzadas de optimización que permitan resolver el modelo de ruteo vehicular de manera eficiente, especialmente en los casos de mayor complejidad y escalabilidad. A continuación, se presentan algunos de los solvers más utilizados y recursos adicionales para su instalación y configuración con Python y Pyomo.
+
+\subsubsection{Herramientas de Ayuda}
+
+A continuación se presentan algunas herramientas clave para resolver el modelo de ruteo vehicular de manera eficiente, especialmente en los casos de mayor complejidad y escalabilidad. Estas incluyen solvers de optimización de gran escala y recursos para la generación de datos sintéticos que ayudarán en el desarrollo y análisis del proyecto.
+
+\paragraph{Solvers de Optimización a Gran Escala:}
+\begin{itemize}
+    \item \textbf{Gurobi:} Gurobi es uno de los solvers comerciales más potentes y ampliamente utilizados en optimización a gran escala. Soporta modelos lineales, no lineales y enteros mixtos. Para aprender a integrarlo con marcos de modelado de código abierto como Pyomo, consulte el siguiente tutorial: \url{https://support.gurobi.com/hc/en-us/articles/16316467014801-How-do-I-use-Gurobi-with-open-source-modeling-frameworks}. Puede encontrar más información y recursos adicionales en su sitio web oficial: \url{https://www.gurobi.com/}.
+    
+    \item \textbf{CPLEX:} CPLEX, desarrollado por IBM, es otro solver de alto rendimiento que ofrece soporte para una variedad de problemas de optimización complejos. Para instalar y utilizar CPLEX con Pyomo, consulte el siguiente recurso: \url{https://eseslab.com/Downloads/Installing-PYOMO-and-CPLEX.pdf}. Puede acceder a la página oficial de CPLEX para información adicional: \url{https://www.ibm.com/analytics/cplex-optimizer}.
+    
+    \item \textbf{HiGHS:} HiGHS es un solver de código abierto, eficiente para resolver problemas de optimización lineal y entera mixta. Para integrarlo con Python y Pyomo, puede consultar este enlace: \url{https://ergo-code.github.io/HiGHS/dev/interfaces/python/}. La página oficial de HiGHS proporciona más detalles: \url{https://highs.dev/}. También, un tutorial de instalación y uso está disponible en Bloque Neon en \texttt{Contenido/Proyecto/HiGHsSolverTutorial.ipynb}.
+\end{itemize}
+
+\paragraph{Generador de Datos Sintéticos:} 
+
+Para ayudar en la creación de datos representativos y personalizados según los requisitos del problema, se ha proporcionado un generador de datos sintéticos. Este recurso facilita la generación de datos similares a los de los casos de prueba, permitiendo a los estudiantes experimentar con diferentes configuraciones sin necesidad de recolectar datos reales. El generador de datos se encuentra en Bloque Neon en \texttt{Contenido/Proyecto/Syntetic Data Factory.zip}.
+
+Estas herramientas y recursos están diseñados para optimizar el proceso de modelado y análisis del proyecto, permitiendo a los estudiantes centrarse en el desarrollo y prueba de su modelo de ruteo vehicular.
+
+\textbf{En este notebook se encuentra todos los costos y parámetros de los vehículos, centros de distribución y clientes.}
+
+\subsubsection{Recursos Adicionales}
+
+\textbf{Open Source Routing Machine (OSRM):} OSRM es un motor de enrutamiento de código abierto que proporciona una API poderosa para calcular rutas óptimas, tiempos de viaje y distancias entre puntos. Este recurso puede ser especialmente útil para comparar y validar los resultados obtenidos en el modelo de ruteo vehicular del proyecto. Para obtener más información y acceder a la documentación oficial de OSRM, visite su sitio web: \url{http://project-osrm.org/}.
+
+Para aprender a utilizar OSRM y generar visualizaciones de rutas, puede consultar este tutorial: \url{https://medium.com/walmartglobaltech/finding-and-plotting-optimal-route-using-open-source-api-in-python-cdcda596996c}.
+
+\paragraph{Uso de OSRM para Cálculo de Distancias y Tiempos}
+La API de OSRM se debe utilizar para calcular las distancias y tiempos de viaje entre los nodos de clientes y los centros de distribución, generando así la matriz de costos para los vehículos de gasolina y eléctricos. Esta matriz será fundamental para optimizar las rutas de estos vehículos de acuerdo con los costos operativos.
+
+\paragraph{Cálculo de la Matriz de Costos para Drones}
+Para los drones, se recomienda calcular la matriz de costos mediante la distancia haversiana (una medida precisa de distancia entre dos puntos en la superficie terrestre) en combinación con la velocidad promedio del dron. Este enfoque permite estimar de manera eficiente los costos de viaje para los drones, que no dependen de las rutas vehiculares tradicionales.
+
+Estos recursos adicionales permitirán enriquecer el modelo de ruteo vehicular, facilitando cálculos de distancia y tiempo más precisos y permitiendo una comparación efectiva de los resultados generados.
+
+
+\subsection{Consideraciones Adicionales}
+
+Para garantizar que el modelo de ruteo vehicular sea representativo y coherente con las restricciones físicas y la realidad operacional de Seneca Libre, los estudiantes deben considerar ciertos ajustes importantes en caso de que su modelado inicial no incluya aspectos como múltiples vehículos, múltiples centros de distribución (depots), o nodos de recarga. A continuación, se detallan las consideraciones que deben tener en cuenta para adaptar sus modelos y trabajar con los datos proporcionados de manera efectiva:
+
+\subsubsection{Adaptación para Múltiples Vehículos y Depots}
+
+Si el modelado inicial no contempla la inclusión de múltiples vehículos o depots, es fundamental realizar ajustes para que el modelo sea capaz de manejar estos elementos, tal como se indica en los datos disponibles:
+\begin{itemize}
+    \item \textbf{Múltiples Vehículos:} Los datos incluyen diferentes tipos de vehículos (Gas Car, Drone, Solar EV) con especificaciones de capacidad, rango y costos. Asegúrese de que el modelo permita la asignación de rutas para cada vehículo según sus características únicas, considerando también las limitaciones en capacidad y rango operativo. Esto implica que los vehículos deben operar dentro de su rango y capacidad de carga para cada ruta asignada.
+    
+    \item \textbf{Múltiples Centros de Distribución (Depots):} Cada depot tiene su propia ubicación y capacidad de suministro de productos. Si el modelo inicial no considera múltiples depots, los estudiantes deberán modificar su estructura para manejar rutas entre múltiples centros de distribución y clientes. Esto también puede implicar la creación de una lógica en el modelo para asignar clientes al depot más cercano o al que optimice los costos de operación.
+\end{itemize}
+
+\subsubsection{Uso de Datos de Nodos de Recarga}
+
+En los casos donde los vehículos necesiten recargar combustible o energía durante sus rutas, los estudiantes deben incluir los nodos de recarga en el modelo. Los nodos de recarga están identificados en los datos proporcionados y cuentan con coordenadas geográficas. Estos nodos deben ser integrados como puntos intermedios en las rutas, asegurando que los vehículos puedan recargar según sus necesidades de combustible o electricidad, especialmente en escenarios de larga distancia o para vehículos con un rango limitado, como los drones y los vehículos eléctricos.
+
+\subsubsection{Ajustes en la Matriz de Costos y Restricciones de Distancia}
+
+Para el cálculo de la matriz de costos, es importante diferenciar entre los vehículos terrestres y los drones:
+\begin{itemize}
+    \item \textbf{Vehículos Terrestres (Gas Car, Solar EV):} Se recomienda utilizar la API de OSRM para calcular las distancias y tiempos de viaje entre los nodos de clientes y los centros de distribución. Esto generará una matriz de costos precisa basada en las distancias reales de las rutas vehiculares.
+    \item \textbf{Drones:} Para los drones, que no siguen rutas de carretera, se sugiere calcular la matriz de costos utilizando la distancia haversiana, basada en las coordenadas geográficas de los nodos y la velocidad promedio del dron. Esto asegura que los costos sean representativos de la realidad operativa de los drones.
+\end{itemize}
+
+\subsubsection{Coherencia y Representatividad de los Datos}
+
+Es crucial que cualquier ajuste realizado en el modelo respete la coherencia y la representatividad de los datos. Los cambios deben alinearse con las restricciones físicas y ser coherentes con los parámetros definidos para cada tipo de vehículo y depot. Esto incluye:
+\begin{itemize}
+    \item La capacidad de carga y el rango operativo de los vehículos deben estar bien definidos y aplicarse adecuadamente en cada caso de prueba.
+    \item Las limitaciones de suministro en cada depot deben respetarse, asegurando que cada uno no exceda su capacidad máxima para cada tipo de producto.
+\end{itemize}
+
+Estas consideraciones adicionales ayudarán a asegurar que el modelo se adapte de manera realista y efectiva a las condiciones operativas de Seneca Libre, reflejando las restricciones logísticas y de recursos en cada escenario del proyecto. El unico valor que no es modificable son los clientes, y en dado caso que su modelado actual no sea suficiente para llegar a una solución de los casos estandares o especiales tendran que modificar el modelado hasta que lleguen a una solución.
+
+\newpage
+
+\section{Descripción de los Casos de Prueba}
+Para evaluar el modelo de ruteo vehicular, se han generado distintos escenarios que simulan condiciones variadas de operación para Seneca Libre. Estos casos permiten verificar la capacidad del modelo para adaptarse a restricciones y desafíos operacionales específicos, variando parámetros como la demanda de clientes, la capacidad de la flota y el uso de nuevas tecnologías.
+
+\subsection{Escenario Base: Operación Estándar}
+Este escenario base simula condiciones operativas sin complicaciones adicionales:
+\begin{itemize}
+    \item Por cada vehículo existente, hay exactamente 2 clientes que requieren abastecimiento.
+    \item La distancia promedio entre los clientes y los centros de distribución es de 5 km, con una desviación estándar de 1 km.
+    \item La demanda de cada cliente varía entre 8 kg y 20 kg.
+\end{itemize}
+\textbf{Objetivo}: Confirmar que el modelo puede satisfacer la demanda de los clientes y minimizar los costos operativos y el tiempo de entrega en un contexto de operación estándar.
+
+\subsection{Escenario 2: Incremento de Vehículos}
+En este escenario, el número de vehículos se incrementa de 25 a 30, mientras que la proporción de vehículos a clientes cambia a una relación de 1:5.
+\begin{itemize}
+    \item Incremento en el número de vehículos disponibles.
+    \item Proporción de clientes a vehículos ajustada, con 5 clientes por cada vehículo.
+\end{itemize}
+\textbf{Objetivo}: Evaluar cómo el modelo se adapta a una flota más grande y una proporción mayor de clientes por vehículo, optimizando el uso de los recursos adicionales de manera eficiente.
+
+\subsection{Escenario 3: Distancias Largas}
+Este escenario simula un entorno en el que las distancias entre los centros de distribución y los clientes son significativamente mayores:
+\begin{itemize}
+    \item La distancia promedio entre los centros de distribución y los clientes se incrementa a 10 km, con una desviación de 0.5 km para asegurar que sean distancias largas.
+    \item La demanda por cliente se reduce para reflejar un escenario de menor carga por cliente.
+\end{itemize}
+\textbf{Objetivo}: Evaluar la capacidad del modelo para manejar eficientemente rutas de larga distancia y analizar el impacto en los costos operativos debido al incremento de distancia en las entregas.
+
+\subsection{Escenario 4: \textbf{CENTROS DE DISTRIBUCIÓN CON CAPACIDAD LIMITADA}}
+\textbf{Descripción:} En este caso, se introduce una nueva restricción donde cada centro de distribución tiene un límite en la cantidad de producto que puede entregar a la vez. Esto implica ajustes en el modelado para acomodar esta restricción adicional en la capacidad de los centros.
+\begin{itemize}
+    \item Cada centro de distribución tiene una capacidad máxima para el volumen de productos que puede distribuir.
+    \item Se requiere modificar el modelo para asegurar que los centros no excedan su capacidad máxima de entrega.
+\end{itemize}
+\textbf{Objetivo}: Adaptar el modelo para cumplir con restricciones de capacidad en los centros de distribución, evaluando el impacto de esta limitación en la planificación de las rutas y en la eficiencia general de las entregas.
+
+\subsection{Caso Especial 1: Múltiples Productos}
+En este caso especial, se considera una demanda diversificada donde cada cliente requiere múltiples tipos de productos.
+\begin{itemize}
+    \item Cada cliente ahora tiene demandas específicas para varios tipos de productos.
+    \item La capacidad de carga de los vehículos permanece constante, pero ahora deben transportar distintos tipos de productos en cada ruta.
+\end{itemize}
+\textbf{Objetivo}: Evaluar la capacidad del modelo para manejar múltiples tipos de demanda y optimizar las rutas considerando las restricciones de capacidad de los vehículos con cargas mixtas.
+
+\subsection{Caso Especial 2: Nodos de Recarga}
+Este escenario introduce la necesidad de utilizar nodos de recarga para resolver el problema de ruteo vehicular.
+\begin{itemize}
+    \item Las distancias entre centros de distribución y clientes son grandes, y la proporción de vehículos a clientes es de 1:20.
+    \item El modelo debe ajustarse para permitir y optimizar el uso de nodos de recarga a lo largo de las rutas.
+\end{itemize}
+\textbf{Objetivo}: Garantizar que el modelo pueda adaptarse y aprovechar los nodos de recarga, permitiendo una operación continua en rutas de larga distancia con una proporción alta de clientes por vehículo.
+
+\subsection{Caso Especial 3: Escalabilidad}
+Este último caso especial prueba la escalabilidad del modelo usando un conjunto de datos significativamente más grande.
+\begin{itemize}
+    \item Se utiliza un conjunto de datos que simula un problema de ruteo con hasta 50 clientes por vehículo y distancias variables entre los centros de distribución y los clientes.
+    \item El objetivo es idear, documentar e implementar una solución escalable que permita trabajar con problemas de ruteo de gran magnitud de forma eficiente y reproducible.
+\end{itemize}
+\textbf{Objetivo}: Desarrollar una solución escalable que mantenga un rendimiento adecuado en problemas de ruteo con grandes volúmenes de datos, optimizando el modelo para resolver eficientemente rutas desde 10 hasta 10 millones de clientes.
+
+\bigskip
+
+\section{Entregables}
+
+Para esta etapa del proyecto, se requiere una serie de entregables que cubren desde la implementación del modelo hasta el análisis detallado de los resultados obtenidos en cada caso de prueba. El objetivo es asegurar que los estudiantes desarrollen una solución robusta y adaptable, capaz de manejar diferentes escenarios sin necesidad de ajustar el modelo para cada caso específico. A continuación, se detallan los entregables requeridos:
+
+\subsection{Implementación del Modelo}
+Se espera una versión actualizada del modelo matemático entregado en la fase anterior. Esta actualización debe incorporar los ajustes necesarios para soportar todos los casos de prueba de manera flexible. Los estudiantes deben documentar:
+\begin{itemize}
+    \item Los cambios realizados al modelo para adaptarse a los distintos escenarios.
+    \item La justificación de cada cambio y las ventajas identificadas al implementar estos ajustes.
+    \item Asegurarse de que el modelo sea generalizable y no requiera modificaciones adicionales para cada caso de prueba.
+\end{itemize}
+El modelo debe implementarse en una clase en el lenguaje de programación elegido, con el código organizado para recibir los mismos formatos de archivos que los datos de los casos de prueba, facilitando así su evaluación. Cualquier intervención manual en los datos podría resultar en penalizaciones.
+
+\subsection{Rutas de los Vehículos}
+Para cada caso, los estudiantes deben entregar un archivo en formato \texttt{.csv} que documente las rutas seguidas por cada vehículo de manera clara y estructurada. Este archivo permitirá evaluar las secuencias de nodos visitados por cada vehículo y analizar la efectividad del modelo en el cumplimiento de las demandas logísticas.
+
+\paragraph{Formato del Nombre del Archivo}
+El nombre del archivo debe seguir el siguiente formato:
+\begin{center}
+    \texttt{<nombre-del-grupo>-caso-<tipo-de-caso>-<numero-del-caso>-ruta.csv}
+\end{center}
+donde:
+\begin{itemize}
+    \item \texttt{<nombre-del-grupo>} es el nombre o identificador del equipo de estudiantes.
+    \item \texttt{<tipo-de-caso>} indica si el caso es estándar o especial (\texttt{estandar} o \texttt{especial}).
+    \item \texttt{<numero-del-caso>} es el número del caso correspondiente (por ejemplo, \texttt{1}, \texttt{2}, etc.).
+\end{itemize}
+Por ejemplo, un archivo de rutas para el primer caso estándar del equipo "Optimizadores" sería nombrado como:
+\begin{center}
+    \texttt{Optimizadores-caso-estandar-1-ruta.csv}
+\end{center}
+Mientras que un archivo para el primer caso especial sería:
+\begin{center}
+    \texttt{Optimizadores-caso-especial-1-ruta.csv}
+\end{center}
+
+\paragraph{Formato del Contenido del Archivo}
+Cada archivo debe seguir el siguiente formato de columnas en el interior, organizado en formato \texttt{csv} para facilitar su lectura y análisis:
+
+\begin{center}
+    \texttt{ID-Vehiculo, ID-Origen, ID-Destino}
+\end{center}
+
+donde:
+\begin{itemize}
+    \item \texttt{ID-Vehiculo} es el identificador único del vehículo que realiza la ruta.
+    \item \texttt{ID-Origen} es el identificador del nodo de inicio de la ruta o de la parada actual.
+    \item \texttt{ID-Destino} es el identificador del siguiente nodo al que se dirige el vehículo en su ruta.
+\end{itemize}
+
+Cada línea del archivo representa una transición de un nodo a otro para un vehículo específico, registrando toda la secuencia de paradas hasta la finalización de su ruta. Este formato permite analizar el trayecto detallado de cada vehículo de manera sencilla.
+
+\paragraph{Ejemplo de Contenido}
+A continuación, se muestra un ejemplo del contenido esperado dentro de un archivo de rutas para ilustrar el formato:
+\begin{verbatim}
+ID-Vehiculo,ID-Origen,ID-Destino
+V01,N001,N002
+V01,N002,N005
+V01,N005,N003
+V02,N003,N004
+V02,N004,N006
+V02,N006,N001
+\end{verbatim}
+
+En este ejemplo:
+\begin{itemize}
+    \item El vehículo \texttt{V01} comienza su ruta en el nodo \texttt{N001}, se desplaza al nodo \texttt{N002}, y así sucesivamente hasta completar su ruta.
+    \item El vehículo \texttt{V02} sigue su propia secuencia de nodos comenzando en \texttt{N003} y terminando en \texttt{N001}.
+\end{itemize}
+
+\subsection{Valor de la Función Objetivo}
+Para cada caso de prueba, se debe entregar un archivo con el valor de la función objetivo obtenida, que debe incluirse en un archivo con el prefijo \texttt{Caso\_Objetivo} o \texttt{CasoEspecial\_Objetivo} (por ejemplo, \texttt{Caso1\_Objetivo.txt}). Este archivo debe contener:
+\begin{itemize}
+    \item El valor total de la función objetivo para el caso.
+\end{itemize}
+
+\subsection{Informe de Costos Operacionales}
+Se debe incluir un informe detallado de los costos operacionales que contribuyen al valor de la función objetivo. Este informe debe desglosar cada tipo de costo involucrado, tales como costos de distancia, tiempo de operación, mantenimiento diario, recarga o combustible, y cualquier otro costo relevante en el cálculo de la función objetivo.
+
+\subsection{Visualización de Rutas}
+Para cada caso, se debe generar una visualización gráfica que muestre las rutas seguidas por cada vehículo. La visualización debe permitir identificar el recorrido de cada vehículo, mostrando claramente los nodos de inicio y los destinos. Los detalles sobre los requisitos específicos de la visualización se amplían en la sección de calificación y bonos.
+
+\subsection{Análisis de Resultados}
+Se debe presentar un análisis exhaustivo de los resultados obtenidos en cada caso de prueba, incluyendo:
+\begin{itemize}
+    \item Identificación de patrones o tendencias observadas en las rutas optimizadas.
+    \item Problemas o desafíos encontrados en la modelación.
+    \item Mejoras potenciales para optimizar los resultados y sugerencias para ajustes futuros.
+\end{itemize}
+
+\subsection{Caso Especial: Escalabilidad}
+Para el caso especial de escalabilidad, se requiere un informe adicional que describa por qué la solución propuesta es escalable y qué limitaciones (o \textit{drawbacks}) tiene en comparación con un enfoque tradicional. Este informe debe incluir un análisis comparativo y una evaluación de las ventajas y desventajas en términos de rendimiento y eficiencia.
+
+\subsection{Código del Modelo}
+El código del modelo debe organizarse en una clase, la cual debe estar diseñada para recibir los datos en el formato especificado para cada caso de prueba. Esto facilitará su uso y revisión, permitiendo a los evaluadores ejecutar el modelo sin modificaciones adicionales. El modelo debe cumplir con los siguientes requisitos:
+\begin{itemize}
+    \item El modelo debe ser capaz de adaptarse a cualquier caso de prueba utilizando el mismo código base.
+    \item Los datos deben ser procesados directamente sin intervención manual para asegurar la reproducibilidad.
+    \item La clase debe estar bien documentada, con instrucciones claras sobre su ejecución y los parámetros de entrada necesarios.
+\end{itemize}
+
+\bigskip
+
+\section{Sistema de Calificación}
+
+Este sistema de calificación está diseñado para evaluar de manera justa y completa los entregables del proyecto de ruteo vehicular, asegurando que cada aspecto relevante del trabajo realizado por los estudiantes sea considerado. La estructura de la calificación también está pensada para incentivar la experimentación y el enfoque innovador, brindando oportunidades para lograr una nota superior a la máxima establecida. A continuación, se detalla la ponderación de cada entregable y la forma en que se evaluarán los casos estándar y especiales.
+
+\subsection{Ponderación de los Cambios en el Modelo}
+Los cambios implementados en el modelo matemático representan un 15\% de la nota total del proyecto. Se evaluará la capacidad del modelo para adaptarse a todos los casos de prueba sin necesidad de modificaciones adicionales, así como la claridad de la justificación de los cambios realizados y las mejoras observadas en la eficiencia del modelo. La calidad de la implementación y la flexibilidad del código también serán aspectos importantes en esta evaluación.
+
+\subsection{Evaluación de los Casos Estándar}
+
+Cada caso estándar incluye entregables específicos que serán evaluados con las siguientes ponderaciones:
+\begin{itemize}
+    \item \textbf{Archivo CSV de Rutas (40\%):} Este archivo debe contener rutas válidas para cada vehículo. La precisión en la secuencia de nodos y la coherencia en las rutas planificadas serán los principales criterios de evaluación.
+    \item \textbf{Valor de la Función Objetivo y Análisis de Costos (15\%):} El valor de la función objetivo debe estar documentado junto con un análisis detallado de los costos operativos. Se evaluará la precisión de los cálculos y la claridad del desglose de costos.
+    \item \textbf{Visualización de Rutas (25\%):} La visualización debe representar de forma clara y efectiva las rutas seguidas por cada vehículo. Se considerará la legibilidad, el diseño y la creatividad en la presentación gráfica.
+    \item \textbf{Análisis de Resultados (20\%):} Este análisis debe detallar los patrones observados, problemas encontrados y posibles mejoras en el modelo. La profundidad y calidad del análisis serán los principales aspectos evaluados.
+\end{itemize}
+
+\paragraph{Distribución de los Casos Estándar}
+Cada caso estándar tiene un nivel de complejidad creciente y será evaluado de acuerdo a la siguiente distribución porcentual:
+\begin{itemize}
+    \item \textbf{Caso 1: Base} 35\% de la nota total. Completar el caso base asegura una calificación mínima de 2.5 en el proyecto.
+    \item \textbf{Caso 2:} 12.5\% de la nota total.
+    \item \textbf{Caso 3:} 12.5\% de la nota total.
+    \item \textbf{Caso 4:} 12.5\% de la nota total.
+\end{itemize}
+La suma de estos casos estándar, junto con la evaluación de los cambios en el modelo (15\%) y la calidad del código (5\%), proporciona un puntaje máximo de 4.625 en el proyecto. 
+
+\subsection{Evaluación de los Casos Especiales}
+El propósito de los casos especiales es fomentar la creatividad, la innovación y la experimentación en la resolución del problema de ruteo vehicular. Estos casos especiales ofrecen una oportunidad para que los estudiantes demuestren habilidades avanzadas y enfoques originales, permitiéndoles obtener una nota superior a la máxima establecida. Los casos especiales tienen las siguientes ponderaciones:
+\begin{itemize}
+    \item \textbf{Caso Especial 1: Múltiples Productos} - 15\% de la nota total.
+    \item \textbf{Caso Especial 2: Nodos de Recarga} - 25\% de la nota total.
+    \item \textbf{Caso Especial 3: Escalabilidad} - 35\% de la nota total.
+\end{itemize}
+
+Completar los casos especiales puede llevar la calificación del proyecto por encima de 5, reflejando el esfuerzo adicional y la capacidad de aplicar técnicas avanzadas en la resolución de problemas complejos.
+
+\subsection{Calidad del Código del Modelo}
+La calidad del código es un aspecto fundamental en la evaluación del proyecto y representa un 5\% de la nota total. Se evaluará la organización del código, la claridad en la estructura de la clase que contiene el modelo y la facilidad para trabajar con archivos de entrada en el formato especificado. El código debe ser funcional y reproducible sin intervención manual en los datos, cumpliendo con el estándar de uso de clases para parametrización flexible.
+
+\subsection{Bonificaciones y Premios}
+
+Además de las calificaciones base, se otorgarán bonificaciones y premios adicionales para reconocer la creatividad, calidad y desempeño excepcional en la presentación de los resultados. Estos incentivos están diseñados para motivar a los estudiantes a explorar enfoques innovadores y destacarse en el proyecto:
+
+\begin{itemize}
+    \item \textbf{Bonificación de 0.5 puntos:} Se otorgará una bonificación adicional de 0.5 puntos a las visualizaciones de rutas más creativas y mejor desarrolladas, reconociendo el esfuerzo y la calidad visual en la representación de los datos. Esta bonificación se sumará a la nota final del proyecto.
+
+    \item \textbf{Premio a la Mejor Visualización:} La visualización de rutas que destaque por su claridad, innovación y atractivo visual será seleccionada para un premio especial, que corresponde a un incremento del 20\% en la nota total del proyecto. Este premio incentiva el uso de técnicas visuales avanzadas para comunicar los resultados de manera efectiva y profesional.
+
+    \item \textbf{Exención de la Entrega 3 del Proyecto:} Como reconocimiento al trabajo sobresaliente, el equipo de instructores (incluidos los dos profesores de la magistral y el profesor del laboratorio) seleccionará dos grupos para eximirlos de la tercera entrega del proyecto. Los grupos seleccionados deberán, en cambio, realizar una presentación en clase, ya sea para los estudiantes del curso o para la clase de Logística de Ingeniería Industrial. Esta exención es un reconocimiento a la excelencia y una oportunidad para compartir las mejores prácticas y resultados con una audiencia más amplia.
+\end{itemize}
+\bigskip
+
+\end{document}

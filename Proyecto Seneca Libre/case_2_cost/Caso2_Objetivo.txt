@@ -1,1 +1,1 @@
-Valor de la función objetivo: 850965.2139183073
+Valor de la función objetivo: 868333.0539183067

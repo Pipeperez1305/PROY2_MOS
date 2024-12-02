@@ -1,0 +1,6 @@
+Reporte de Costos Operacionales:
+Costo por distancia recorrida: 513106.80000000005
+Costo por duración del trayecto: 110523.33333333333
+Costo de mantenimiento diario: 153000.0
+Costo por carga transportada: 74335.08058497401
+Costo total (función objetivo): 850965.2139183074

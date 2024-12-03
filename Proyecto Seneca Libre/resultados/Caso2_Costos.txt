@@ -1,4 +1,4 @@
-Reporte de Costos Operacionales (COP):
+Reporte de Costos Operacionales:
 Costo por distancia recorrida (COP): 513106.7999999996
 Costo por duración del trayecto (COP): 110523.33333333336
 Costo de mantenimiento diario (COP): 153000.0

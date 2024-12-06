@@ -1,8 +1,8 @@
 Reporte de Costos Operacionales:
-Costo por distancia recorrida (COP): 513106.7999999996
-Costo por duración del trayecto (COP): 110523.33333333336
+Costo por distancia recorrida (COP): 519372.3999999869
+Costo por duración del trayecto (COP): 107800.00000000144
 Costo de mantenimiento diario (COP): 153000.0
 Costo por carga transportada (COP): 74335.08058497401
-Costo por carga de combustible (COP): 13232.640000000038
-Costo por tiempo de carga de combustible (COP): 4135.200000000012
-Costo total (función objetivo) (COP): 868333.053918307
+Costo por carga de combustible (COP): 13232.63999999906
+Costo por tiempo de carga de combustible (COP): 4135.199999999708
+Costo total (función objetivo) (COP): 871875.3205849612
